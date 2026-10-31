@@ -6,11 +6,21 @@ It does **not** inject scripts, CSS, overlays, or badges into Neopets pages, and
 
 ## Install (unpacked)
 
-1. Download / unzip `jellyneo-price-lookup.zip` if needed
+1. Install dependencies and build:
+
+   ```bash
+   npm install
+   npm run build
+   ```
+
 2. Open Chrome → `chrome://extensions`
 3. Enable **Developer mode**
 4. Click **Load unpacked**
-5. Choose the `jellyneo-price-lookup` folder (the one that contains `manifest.json`)
+5. Choose the `dist` folder
+
+`npm run watch` rebuilds `dist/` when source files change. Reload the extension on `chrome://extensions` after a rebuild.
+
+`npm run build` also packs `dist/jellyneo-price-lookup.crx`. The packed extension ID stays stable when `jellyneo-price-lookup-key.pem` is present in the repo root (it is gitignored). A build without that key uses a throwaway key, so the packed ID changes. The public key in `manifest.json` keeps unpacked loads of `dist/` on the same ID as a CRX signed with that pem.
 
 ## Usage
 
@@ -27,4 +37,3 @@ Optional: highlight an item name → right-click → **Look up “…” in Jell
 - `contextMenus` — selection → popup handoff
 
 No `neopets.com` host permission. No content scripts.
-# jellyneo-price-lookup

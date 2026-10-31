@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jellyneo Price Lookup</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="brand">
+        <img class="brand-mark" src="icons/icon48.png" alt="" width="28" height="28" />
+        <div>
+          <h1>Jellyneo Prices</h1>
+          <p class="tagline">Popup only · never injects into Neopets</p>
+        </div>
+      </div>
+    </header>
+
+    <form id="search-form" class="search" autocomplete="off">
+      <label class="sr-only" for="item-name">Item name</label>
+      <input
+        id="item-name"
+        name="item"
+        type="search"
+        placeholder="Exact item name…"
+        spellcheck="false"
+        required
+      />
+      <button type="submit" id="search-btn">Look up</button>
+    </form>
+
+    <section id="result" class="result" hidden aria-live="polite"></section>
+    <p id="status" class="status" role="status"></p>
+
+    <section class="settings">
+      <button type="button" id="clear-cache" class="ghost">Clear price cache</button>
+    </section>
+
+    <footer class="footer">
+      Prices from
+      <a href="https://items.jellyneo.net/" target="_blank" rel="noopener">items.jellyneo.net</a>.
+      This extension does not run scripts on Neopets pages.
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

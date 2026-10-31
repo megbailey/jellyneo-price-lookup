@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Jellyneo Price Lookup",
+  "version": "1.1.0",
+  "description": "Local-only Jellyneo item price lookup from the extension popup. Does not inject into Neopets pages.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlR6JbPlFgxcCoPUatX3+LfXV62NV8vgQmvruzQfl8B89NqhuOin9i9t6Dq95bNbP8TSRlbzPuCmyenuWMWYFDUCcz8qmQN3VcS4+z2aWEhDoC8LwF3U/H2l5CGdvCFYxt9Y/D174+OK9vWkbQ9ToJFUM9TUgzyfytOiw0Fpgdr2WzjvuWY2F5dHn6suqY+QdydLi5WrX6XJV4QgqqlH0SbqGs1gCUcWkgK8OBYY7ypa5qdyX7wmdpIAaVmPEjjqB056bB2IaYrbPZm/AyR1Ouo9BYRIkdadM/1bsJajsVZm2V/UbCfY1KHfKoRIns3cqpvNIumDgYuxC6Agm6PkU/QIDAQAB",
+  "permissions": ["storage", "contextMenus"],
+  "host_permissions": [
+    "https://items.jellyneo.net/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Jellyneo Price Lookup",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

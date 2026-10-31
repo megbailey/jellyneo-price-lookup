@@ -1,0 +1,15 @@
+{
+  "name": "jellyneo-price-lookup",
+  "version": "1.1.0",
+  "private": true,
+  "scripts": {
+    "watch": "webpack --config webpack.config.js --watch",
+    "build": "webpack --config webpack.config.js"
+  },
+  "devDependencies": {
+    "copy-webpack-plugin": "^14.0.0",
+    "crx-pack-webpack-plugin": "^1.1.1",
+    "webpack": "^5.111.1",
+    "webpack-cli": "^7.2.3"
+  }
+}
