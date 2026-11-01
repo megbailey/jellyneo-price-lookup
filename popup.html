@@ -12,7 +12,7 @@
         <img class="brand-mark" src="icons/icon48.png" alt="" width="28" height="28" />
         <div>
           <h1>Jellyneo Prices</h1>
-          <p class="tagline">Popup only · never injects into Neopets</p>
+          <p class="tagline">Neopets pages only · no requests to Neopets</p>
         </div>
       </div>
     </header>
@@ -33,14 +33,24 @@
     <section id="result" class="result" hidden aria-live="polite"></section>
     <p id="status" class="status" role="status"></p>
 
+    <section id="page-items" class="item-list" hidden>
+      <h2>On this page <span id="page-count"></span></h2>
+      <ul id="page-list"></ul>
+    </section>
+
+    <section id="history" class="item-list" hidden>
+      <h2>Recent lookups</h2>
+      <ul id="history-list"></ul>
+    </section>
+
     <section class="settings">
-      <button type="button" id="clear-cache" class="ghost">Clear price cache</button>
+      <button type="button" id="clear-cache" class="ghost">Clear recent lookups</button>
     </section>
 
     <footer class="footer">
       Prices from
       <a href="https://items.jellyneo.net/" target="_blank" rel="noopener">items.jellyneo.net</a>.
-      This extension does not run scripts on Neopets pages.
+      Item names are read only on neopets.com. The page is not changed, and Neopets is not contacted.
     </footer>
 
     <script src="popup.js"></script>

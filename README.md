@@ -1,8 +1,10 @@
 # Jellyneo Price Lookup (Chrome extension)
 
-Local-only Chrome extension that looks up Neopets item prices on [Jellyneo’s Item Database](https://items.jellyneo.net/) from the **extension popup only**.
+Chrome extension that looks up Neopets item prices on [Jellyneo’s Item Database](https://items.jellyneo.net/) from the extension popup.
 
-It does **not** inject scripts, CSS, overlays, or badges into Neopets pages, and it does not request access to `neopets.com`.
+Opening the popup reads item names only when the open tab is `neopets.com`. On any other site it does not run in the page. That read does not change the page and does not send a request to Neopets. There is no `neopets.com` host permission and no content script. Prices are requested from Jellyneo only.
+
+The function runs in Chrome's isolated world, which the page's JavaScript cannot see. It does not add a script tag, load a file, or change the page. Reading the item names does not send a request to Neopets, so nothing shows up in their logs either.
 
 ## Install (unpacked)
 
@@ -24,16 +26,19 @@ It does **not** inject scripts, CSS, overlays, or badges into Neopets pages, and
 
 ## Usage
 
-1. Click the extension icon
-2. Type/paste an **exact** item name
-3. Hit **Look up**
+1. On a Neopets inventory, shop, or other item page, click the extension icon
+2. The popup lists item names already on that tab and fills in Jellyneo prices
+3. Or type/paste an **exact** item name and hit **Look up**
 
-Optional: highlight an item name → right-click → **Look up “…” in Jellyneo Prices**.
+Recent lookups stay in the popup. On a Neopets page, highlight an item name → right-click → **Look up “…” in Jellyneo Prices**. That menu does not appear on other sites.
+
+Only the items on the current page are read. The extension does not page through a shop or safety deposit box, because that would contact Neopets.
 
 ## Permissions
 
 - `items.jellyneo.net` — price lookups only
-- `storage` — local price cache
+- `storage` — local price cache and recent lookups
 - `contextMenus` — selection → popup handoff
+- `activeTab` and `scripting` — when you open the popup on `neopets.com`, read item names from that tab
 
 No `neopets.com` host permission. No content scripts.

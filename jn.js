@@ -57,24 +57,44 @@ function absUrl(href) {
  * @param {string} html
  * @param {string} queryName
  */
+export function isNeopetsUrl(url) {
+  try {
+    const hostname = new URL(url).hostname;
+    return hostname === "neopets.com" || hostname.endsWith(".neopets.com");
+  } catch {
+    return false;
+  }
+}
+
+export function isPriceLabel(text) {
+  return /^[\d,]+\s*NP$/i.test(String(text || "").replace(/\s+/g, " ").trim());
+}
+
 export function parseSearchHtml(html, queryName) {
-  const itemMatch = html.match(
-    /href="(\/item\/[^"]+)"[^>]*>([^<]{1,120})</i
-  );
-  const itemUrl = absUrl(itemMatch?.[1]);
-  const linkedName = itemMatch
-    ? decodeEntities(itemMatch[2]).trim()
-    : null;
+  const linkRe = /href="(\/item\/(?![^"]*price-history)[^"]+)"[^>]*>([^<]{1,120})</gi;
+  let itemUrl = null;
+  let linkedName = null;
+  let match;
+  while ((match = linkRe.exec(html))) {
+    const text = decodeEntities(match[2]).replace(/\s+/g, " ").trim();
+    if (!itemUrl) itemUrl = absUrl(match[1]);
+    if (text && !isPriceLabel(text)) {
+      linkedName = text;
+      itemUrl = absUrl(match[1]);
+      break;
+    }
+  }
 
   let name = linkedName || queryName;
   const exactRe = new RegExp(
-    `href="(\\/item\\/[^"]+)"[^>]*>\\s*${escapeRegExp(queryName)}\\s*<`,
+    `href="(\\/item\\/(?![^"]*price-history)[^"]+)"[^>]*>\\s*${escapeRegExp(queryName)}\\s*<`,
     "i"
   );
   const exact = html.match(exactRe);
   if (exact) {
     name = queryName;
   }
+  if (isPriceLabel(name) && !isPriceLabel(queryName)) name = queryName;
 
   const imgMatch =
     html.match(/src="(https?:\/\/images\.neopets\.com\/[^"]+)"/i) ||

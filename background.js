@@ -2,13 +2,16 @@ import {
   CACHE_TTL_MS,
   MAX_CONCURRENCY,
   REQUEST_GAP_MS,
+  isNeopetsUrl,
   parseHistoryHtml,
   parseSearchHtml,
   searchUrl,
 } from "./jn.js";
 
 const CACHE_KEY = "jnPriceCache";
+const HISTORY_KEY = "jnLookupHistory";
 const PENDING_KEY = "pendingLookup";
+const MAX_HISTORY = 20;
 
 /** @type {{ lastAt: number, inflight: number, queue: Array<() => void> }} */
 const gate = { lastAt: 0, inflight: 0, queue: [] };
@@ -19,6 +22,12 @@ chrome.runtime.onInstalled.addListener(() => {
       id: "jn-lookup-selection",
       title: "Look up “%s” in Jellyneo Prices",
       contexts: ["selection"],
+      documentUrlPatterns: [
+        "https://neopets.com/*",
+        "https://*.neopets.com/*",
+        "http://neopets.com/*",
+        "http://*.neopets.com/*",
+      ],
     });
   });
 });
@@ -26,6 +35,7 @@ chrome.runtime.onInstalled.addListener(() => {
 // Selection → stash name for the popup. Never touches the page DOM.
 chrome.contextMenus.onClicked.addListener(async (info) => {
   if (info.menuItemId !== "jn-lookup-selection") return;
+  if (!isNeopetsUrl(info.pageUrl || "")) return;
   const name = (info.selectionText || "").trim();
   if (!name) return;
 
@@ -49,8 +59,18 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
 async function handleMessage(message) {
   switch (message?.type) {
-    case "JN_LOOKUP":
-      return { ok: true, result: await lookupItem(message.name) };
+    case "JN_LOOKUP": {
+      const result = await lookupItem(message.name, { remember: message.remember !== false });
+      return { ok: true, result, history: await listHistory() };
+    }
+    case "JN_PEEK": {
+      const clean = String(message.name || "").trim();
+      if (!clean) return { ok: true, result: null };
+      const cached = await cacheGet(clean);
+      return { ok: true, result: cached === undefined ? null : cached };
+    }
+    case "JN_LIST_HISTORY":
+      return { ok: true, history: await listHistory() };
     case "JN_TAKE_PENDING": {
       const data = await chrome.storage.session.get(PENDING_KEY);
       const name = data[PENDING_KEY] || null;
@@ -58,8 +78,8 @@ async function handleMessage(message) {
       return { ok: true, name };
     }
     case "JN_CLEAR_CACHE":
-      await chrome.storage.local.set({ [CACHE_KEY]: {} });
-      return { ok: true };
+      await chrome.storage.local.set({ [CACHE_KEY]: {}, [HISTORY_KEY]: [] });
+      return { ok: true, history: [] };
     default:
       return { ok: false, error: "Unknown message type" };
   }
@@ -68,15 +88,20 @@ async function handleMessage(message) {
 /**
  * @param {string} name
  */
-async function lookupItem(name) {
+async function lookupItem(name, options = {}) {
+  const remember = options.remember !== false;
   const clean = String(name || "").trim();
   if (!clean) throw new Error("Empty item name");
 
   const cached = await cacheGet(clean);
-  if (cached !== undefined) return cached;
+  if (cached !== undefined) {
+    if (remember) await recordHistory(clean, cached);
+    return cached;
+  }
 
   const result = await withRateLimit(() => fetchJnItem(clean));
   await cachePut(clean, result);
+  if (remember) await recordHistory(clean, result);
   return result;
 }
 
@@ -147,6 +172,40 @@ function pump() {
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+async function listHistory() {
+  const data = await chrome.storage.local.get([HISTORY_KEY, CACHE_KEY]);
+  if (Array.isArray(data[HISTORY_KEY])) return data[HISTORY_KEY];
+
+  const cache = data[CACHE_KEY] || {};
+  const seeded = Object.entries(cache)
+    .map(([query, hit]) => historyItem(query, hit?.entry, hit?.ts))
+    .sort((a, b) => b.ts - a.ts)
+    .slice(0, MAX_HISTORY);
+  await chrome.storage.local.set({ [HISTORY_KEY]: seeded });
+  return seeded;
+}
+
+async function recordHistory(query, entry) {
+  const history = await listHistory();
+  const key = query.toLowerCase();
+  const next = [
+    historyItem(query, entry, Date.now()),
+    ...history.filter((item) => String(item?.query || "").trim().toLowerCase() !== key),
+  ].slice(0, MAX_HISTORY);
+  await chrome.storage.local.set({ [HISTORY_KEY]: next });
+}
+
+function historyItem(query, entry, ts) {
+  return {
+    query,
+    name: entry?.name || query,
+    price: entry?.price ?? null,
+    inflated: Boolean(entry?.inflated),
+    url: entry?.url || null,
+    ts: ts || Date.now(),
+  };
 }
 
 async function cacheGet(name) {
